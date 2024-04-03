@@ -35,12 +35,18 @@ class AmazonReviewsSpider(scrapy.Spider):
 
     def parse_reviews(self, response, page_number, rating):
         for review_element in response.xpath("//div[@data-hook='review']"):
+            external_id = self._get_external_review_id(review_element)
             review_body = self._get_review_body(review_element)
             rating_number = self._get_review_rating(review_element)
             author = self._get_review_author(review_element)
             post_date = self._get_review_post_date(review_element)
 
-            yield ReviewItem(review_body=review_body, rating_number=rating_number, author=author, post_date=post_date)
+            yield ReviewItem(product_code=self.product_code,
+                             external_id=external_id,
+                             review_body=review_body,
+                             rating_number=rating_number,
+                             author=author,
+                             post_date=post_date)
 
         if self._is_last_review_pagination_page(response):
             logger.info(f"Last reviews page. product: {self.product_code} | page: {page_number} | rating: {rating}")
@@ -50,14 +56,17 @@ class AmazonReviewsSpider(scrapy.Spider):
         yield self.get_next_review_request(rating, next_page_number)
 
     @staticmethod
+    def _get_external_review_id(review_element):
+        return review_element.xpath("./@id").get()
+
+    @staticmethod
     def _get_review_body(review_element):
         return review_element.xpath(".//*[contains(@data-hook, 'review-body')]/span").get()
 
     @staticmethod
     def _get_review_rating(review_element):
-        rating_str = review_element.xpath(
-            ".//i[@data-hook='review-star-rating' and contains(@class, 'a-star-')]/@class").re_first(r'a-star-(\d+)',
-                                                                                                     default='0')
+        xpath = ".//i[contains(@data-hook, 'review-star-rating') and contains(@class, 'a-star-')]/@class"
+        rating_str = review_element.xpath(xpath).re_first(r'a-star-(\d+)', default='0')
         return float(rating_str)
 
     @staticmethod
