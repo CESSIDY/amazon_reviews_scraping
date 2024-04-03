@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "amazon-reviews-scraping"
+version = "0.1.0"
+description = ""
+authors = ["Vadym <vrupa1713@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+scrapy = "^2.11.1"
+python-dotenv = "^1.0.1"
+sqlalchemy = "^2.0.29"
+alembic = "^1.13.1"
+mysqlclient = "^2.2.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
