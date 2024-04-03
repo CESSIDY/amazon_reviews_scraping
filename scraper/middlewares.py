@@ -1,103 +1,76 @@
-# Define here the models for your spider middleware
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+# -*- coding: utf-8 -*-
+import logging
 
-from scrapy import signals
+from scrapy.downloadermiddlewares.retry import RetryMiddleware
+from scrapy.utils.response import response_status_message
 
-# useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
-
-
-class ScraperSpiderMiddleware:
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the spider middleware does not modify the
-    # passed objects.
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
-
-    def process_spider_input(self, response, spider):
-        # Called for each response that goes through the spider
-        # middleware and into the spider.
-
-        # Should return None or raise an exception.
-        return None
-
-    def process_spider_output(self, response, result, spider):
-        # Called with the results returned from the Spider, after
-        # it has processed the response.
-
-        # Must return an iterable of Request, or item objects.
-        for i in result:
-            yield i
-
-    def process_spider_exception(self, response, exception, spider):
-        # Called when a spider or process_spider_input() method
-        # (from other spider middleware) raises an exception.
-
-        # Should return either None or an iterable of Request or item objects.
-        pass
-
-    def process_start_requests(self, start_requests, spider):
-        # Called with the start requests of the spider, and works
-        # similarly to the process_spider_output() method, except
-        # that it doesn’t have a response associated.
-
-        # Must return only requests (not items).
-        for r in start_requests:
-            yield r
-
-    def spider_opened(self, spider):
-        spider.logger.info("Spider opened: %s" % spider.name)
+from scrapy import Request, Spider
+from w3lib.http import basic_auth_header
 
 
-class ScraperDownloaderMiddleware:
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the downloader middleware does not modify the
-    # passed objects.
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
-
-    def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
-
-        # Must either:
-        # - return None: continue processing this request
-        # - or return a Response object
-        # - or return a Request object
-        # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
-        return None
+class CustomRetryMiddleware(RetryMiddleware):
+    logger = logging.getLogger(__name__.split('.')[-1])
 
     def process_response(self, request, response, spider):
-        # Called with the response returned from the downloader.
+        if request.meta.get("dont_retry", False):
+            return
+        if response.selector.type not in ("html", "xml", "text"):
+            self.logger.warning("Incorrect response type received")
+            return response
 
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
+        if self._is_redirected_at_login_page(response):
+            reason = "Redirected to login"
+            request = request.replace(url=request.meta.get("request_url", request.url))
+            return self._retry(request, reason, spider) or response
+        elif self._is_captcha_page(response):
+            reason = "Received captcha"
+            return self._retry(request, reason, spider) or response
+        elif self._is_retry_status(response):
+            reason = response_status_message(response.status)
+            return self._retry(request, reason, spider) or response
         return response
 
-    def process_exception(self, request, exception, spider):
-        # Called when a download handler or a process_request()
-        # (from other downloader middleware) raises an exception.
+    def _is_retry_status(self, response):
+        return bool(response.status in self.retry_http_codes)
 
-        # Must either:
-        # - return None: continue processing this exception
-        # - return a Response object: stops process_exception() chain
-        # - return a Request object: stops process_exception() chain
-        pass
+    @staticmethod
+    def _is_last_retry(request):
+        retry_times = request.meta.get("retry_times", 0)
+        max_retry_times = request.meta.get("max_retry_times", 0)
+        return bool(retry_times == max_retry_times)
 
-    def spider_opened(self, spider):
-        spider.logger.info("Spider opened: %s" % spider.name)
+    @staticmethod
+    def _is_redirected_at_login_page(response):
+        return bool("www.amazon.com/ap/signin" in response.url)
+
+    @staticmethod
+    def _is_captcha_page(response):
+        return response.xpath("//form[contains(@action, 'Captcha')]")
+
+
+class HttpProxyMiddleware:
+    logging_enabled = True
+
+    @staticmethod
+    def update_request(request: Request, spider: Spider) -> Request:
+        if "proxy" not in request.meta.keys():
+            proxy = spider.settings.get("PROXY")
+            proxy_auth = spider.settings.get("PROXY_AUTH")
+
+            if not proxy:
+                raise Exception("Proxy enabled but not configured")
+
+            if proxy_auth:
+                request.headers["Proxy-Authorization"] = basic_auth_header(*proxy_auth.split(":"))
+            if "http" not in proxy:
+                proxy = "http://{}".format(proxy)
+            request.meta["proxy"] = proxy
+            return request
+
+    def process_request(self, request: Request, spider: Spider) -> None:
+        if hasattr(spider, "proxy_enabled") and spider.proxy_enabled or spider.settings.get("PROXY_ENABLED"):
+            request = HttpProxyMiddleware.update_request(request, spider)
+        else:
+            if self.logging_enabled:
+                spider.logger.warning("PROXY DISABLED")
+                self.logging_enabled = False
