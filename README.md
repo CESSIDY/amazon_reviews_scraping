@@ -19,9 +19,7 @@ This scraper collects and stores reviews for the selected product, to change the
       - PROXY_AUTH=some_username:some_password
       - PROXY_ENABLED=True
       - AUTO_CLOSE_CACHED_CONNECTIONS_ENABLED=False # If your proxy change it IP only after reconnection than this parameter need to be `True` for closing connection after every request. 
-      - all other settings can remain the same, or you can change them as you wish (for example add your own Mysql database)  
-2.  Rename `./docker/mysql/docker-entrypoint-initdb.d/createdb.example.sql` file to `./docker/mysql/docker-entrypoint-initdb.d/createdb.sql`
-
+      - all other settings can remain the same, or you can change them as you wish (for example add your own Mysql database)
 
 ### **Running (After all configurations)**
   1. go to the project directory;
