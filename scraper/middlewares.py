@@ -3,7 +3,6 @@ import logging
 
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.utils.response import response_status_message
-
 from scrapy import Request, Spider
 from w3lib.http import basic_auth_header
 

@@ -1,0 +1,51 @@
+version: '3.9'
+networks:
+  general:
+    driver: bridge
+volumes:
+  mysql:
+    driver: local
+
+services:
+  python:
+    build:
+      context: .
+      dockerfile: ./docker/scraper/Dockerfile
+      args:
+        - 'PYTHON_VERSION=${PYTHON_VERSION}'
+    volumes:
+      - './scraper:/var/app/scraper'
+      - './.env:/var/app/.env'
+      - './alembic.ini:/var/app/alembic.ini'
+      - './scrapy.cfg:/var/app/scrapy.cfg'
+    extra_hosts:
+      - 'dockerhost:${DOCKER_HOST_IP}'
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    stdin_open: true
+    tty: true
+    networks:
+      - general
+  mysql:
+    build:
+      context: ./docker/mysql
+      args:
+        - 'MYSQL_VERSION=${MYSQL_VERSION}'
+    environment:
+      - 'MYSQL_DATABASE=${MYSQL_DATABASE}'
+      - 'MYSQL_USER=${MYSQL_USER}'
+      - 'MYSQL_PASSWORD=${MYSQL_PASSWORD}'
+      - 'MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}'
+      - 'TZ=UTC'
+    hostname: mysql
+    volumes:
+      - '${DATA_PATH_HOST}/mysql:/var/lib/mysql'
+      - '${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d'
+    ports:
+      - '${MYSQL_PORT}:3306'
+    networks:
+      - general
+
+

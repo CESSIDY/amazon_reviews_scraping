@@ -2,7 +2,7 @@
 from sqlalchemy import Column, text, VARCHAR, UniqueConstraint
 from sqlalchemy.dialects.mysql import BIGINT, TEXT, TIMESTAMP, SMALLINT, DATE
 
-from database.models.base import Base
+from .base import Base
 
 
 class Review(Base):
@@ -17,6 +17,7 @@ class Review(Base):
     id = Column("id", BIGINT(unsigned=True), primary_key=True, autoincrement=True)
 
     product_code = Column(VARCHAR(64), index=True, unique=False, nullable=True)
+    product_code_1 = Column(VARCHAR(64), index=True, unique=False, nullable=True)
     external_id = Column(VARCHAR(64), index=True, unique=False, nullable=True)
     review_body = Column(TEXT(), index=False, unique=False, nullable=True)
     rating_number = Column(SMALLINT(), index=False, unique=False, nullable=True,  default=0, server_default=text('0'))

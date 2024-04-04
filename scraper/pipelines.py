@@ -4,10 +4,10 @@ from sqlalchemy import Engine, create_engine, cast, Integer
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.mysql import insert
-from utils.mysql_connection_string import mysql_connection_string
 
-from database.models import Review
-from items import ReviewItem
+from scraper.utils.mysql_connection_string import mysql_connection_string
+from scraper.database.models import Review
+from scraper.items import ReviewItem
 
 
 class ReviewsStoringPipeline:
