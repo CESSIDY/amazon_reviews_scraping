@@ -1,6 +1,3 @@
-#!/bin/bash
-
-set -eu
 cd /var/app
 
 poetry run alembic upgrade head
