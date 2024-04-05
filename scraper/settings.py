@@ -72,6 +72,11 @@ PROXY = os.getenv("PROXY", "")
 PROXY_AUTH = os.getenv("PROXY_AUTH", "")
 PROXY_ENABLED = strtobool(os.getenv("PROXY_ENABLED", "False"))
 
+# If you have a problem with the ssl certificate validation with your proxy server when using
+# a proxy, and you trust it then you can disable the validation to work around the problem
+SSL_CERT_CHECK_ENABLED = strtobool(os.getenv("SSL_CERT_CHECK_ENABLED", "True"))
+
+
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = int(os.getenv("DB_PORT", "3306"))
 DB_USERNAME = os.getenv("DB_USERNAME", "root")
