@@ -12,6 +12,8 @@ python-dotenv = "^1.0.1"
 sqlalchemy = "^2.0.29"
 alembic = "^1.13.1"
 mysqlclient = "^2.2.4"
+botasaurus = "^4.0.14"
+requests = {extras = ["security"], version = "^2.31.0"}
 
 
 [build-system]

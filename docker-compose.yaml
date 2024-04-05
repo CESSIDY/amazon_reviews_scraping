@@ -7,10 +7,31 @@ volumes:
     driver: local
 
 services:
-  python:
+  scraper-scrapy:
     build:
       context: .
-      dockerfile: ./docker/scraper/Dockerfile
+      dockerfile: ./docker/scraper-scrapy/Dockerfile
+      args:
+        - 'PYTHON_VERSION=${PYTHON_VERSION}'
+    volumes:
+      - './scraper:/var/app/scraper'
+      - './.env:/var/app/.env'
+      - './alembic.ini:/var/app/alembic.ini'
+      - './scrapy.cfg:/var/app/scrapy.cfg'
+    extra_hosts:
+      - 'dockerhost:${DOCKER_HOST_IP}'
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    stdin_open: true
+    tty: true
+    networks:
+      - general
+  scraper-botasaurus-request:
+    build:
+      context: .
+      dockerfile: ./docker/scraper-botasaurus-request/Dockerfile
       args:
         - 'PYTHON_VERSION=${PYTHON_VERSION}'
     volumes:

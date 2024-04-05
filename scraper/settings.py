@@ -72,6 +72,9 @@ PROXY = os.getenv("PROXY", "")
 PROXY_AUTH = os.getenv("PROXY_AUTH", "")
 PROXY_ENABLED = strtobool(os.getenv("PROXY_ENABLED", "False"))
 
+SSL_CERT_CHECK_ENABLED = strtobool(os.getenv("SSL_CERT_CHECK_ENABLED", "True"))
+
+
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = int(os.getenv("DB_PORT", "3306"))
 DB_USERNAME = os.getenv("DB_USERNAME", "root")
