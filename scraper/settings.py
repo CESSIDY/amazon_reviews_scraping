@@ -72,8 +72,6 @@ PROXY = os.getenv("PROXY", "")
 PROXY_AUTH = os.getenv("PROXY_AUTH", "")
 PROXY_ENABLED = strtobool(os.getenv("PROXY_ENABLED", "False"))
 
-# If you have a problem with the ssl certificate validation with your proxy server when using
-# a proxy, and you trust it then you can disable the validation to work around the problem
 SSL_CERT_CHECK_ENABLED = strtobool(os.getenv("SSL_CERT_CHECK_ENABLED", "True"))
 
 
