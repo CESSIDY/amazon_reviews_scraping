@@ -1,14 +1,10 @@
 import json
-from typing import Iterable
 from datetime import datetime
 import logging
-from requests.models import Response
-import os
 
 import scrapy
 from scrapy.http import HtmlResponse
 from botasaurus import *
-from botasaurus.create_stealth_driver import create_stealth_driver
 
 from scraper.utils import proxy_string, custom_request
 from scraper.items import ReviewItem
@@ -19,33 +15,33 @@ logger = logging.getLogger(__name__)
 class AmazonReviewsBotasaurusRequestSpider(scrapy.Spider):
     name = "amazon_reviews_botasaurus_request"
     allowed_domains = ["www.amazon.com"]
-    start_urls = ["https://www.amazon.com"]
+    start_urls = ["https://www.google.com"]
     product_code = "B01IPHVFUI"
     reviews_url_format_str = "https://www.amazon.com/product-reviews/{code}?filterByStar={rating}&pageNumber={page_number}&language=en_US&sortBy=relevancy&formatType=current_format"
     rating_numbers_to_string_filter = {1: "one_star", 2: "two_star", 3: "three_star", 4: "four_star", 5: "five_star"}
     MAX_PAGE_LIMIT = 10
 
     def parse(self, response):
-        reviews_scraper_queue = AmazonReviewsBotasaurusRequestSpider.scrape_reviews_task()
-        for rating_number in range(1, 2):  # TODO: Change to 6
+        reviews_scraper_queue = self.scrape_reviews_task()
+        for rating_number in range(1, 6):
             rating_filter = self.rating_numbers_to_string_filter[rating_number]
-            reviews_scraper_queue.put({'self': self, 'rating_filter': rating_filter})
-        reviews = reviews_scraper_queue.get()
+            reviews_scraper_queue.put(rating_filter)
 
+        reviews = reviews_scraper_queue.get()
         for review in reviews:
             yield ReviewItem().from_dict(json.loads(review))
+        return
 
-    @staticmethod
     @custom_request(async_queue=True, proxy=proxy_string())
-    def scrape_reviews_task(request: AntiDetectRequests, data):
+    def scrape_reviews_task(self, request: AntiDetectRequests, rating_filter):
         all_reviews = []
-        for page_number in range(1, data['self'].MAX_PAGE_LIMIT + 1):
-            response = data['self'].make_next_review_request(request, data['rating_filter'], page_number)
-            reviews = data['self'].parse_reviews(response)
+        for page_number in range(1, self.MAX_PAGE_LIMIT + 1):
+            response = self.make_next_review_request(request, rating_filter, page_number)
+            reviews = self.parse_reviews(response)
             all_reviews.extend(reviews)
-            if data['self']._is_last_review_pagination_page(response):
+            if self._is_last_review_pagination_page(response):
                 logger.info(
-                    f"Last reviews page. product: {data['self'].product_code} | page: {page_number} | rating: {data['rating_filter']}")
+                    f"Last reviews page. product: {self.product_code} | page: {page_number} | rating: {rating_filter}")
                 return all_reviews
         return all_reviews
 
@@ -53,7 +49,7 @@ class AmazonReviewsBotasaurusRequestSpider(scrapy.Spider):
         review_url = self.reviews_url_format_str.format(code=self.product_code,
                                                         rating=rating,
                                                         page_number=next_page_number)
-        response = request.get(review_url, verify=True if self.settings['SSL_CERT_CHECK_ENABLED'] else None)
+        response = request.get(review_url, verify=self.settings['SSL_CERT_CHECK_ENABLED'])
         return HtmlResponse(
             url=review_url,
             body=response.text,

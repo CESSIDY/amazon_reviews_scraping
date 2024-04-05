@@ -26,7 +26,9 @@ This scraper collects and stores reviews for the selected product, to change the
   2. run: `docker-compose build --force-rm`;
   3. run: `docker-compose up -d mysql` - if you use your own database you can skip this step 
   4. wait around 1 minute for completing DB initialization
-  5. run: `docker-compose up -d python`
+  5. several implementations of scrapers to choose from:
+     - run: `docker-compose up -d scraper-scrapy` basic scrapy scraper (need to use rotation proxy)
+     - run: `docker-compose up -d scraper-botasaurus-request` a more inconspicuous scraper (but also better use a rotation proxy)
 
 
 ### **After launch**

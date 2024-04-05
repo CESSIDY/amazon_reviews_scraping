@@ -23,9 +23,10 @@ class ReviewItem(scrapy.Item):
         }
 
     def from_dict(self, data):
-        self['product_code'] = data.get("product_code"),
-        self['external_id'] = data.get("external_id"),
-        self['review_body'] = data.get("review_body"),
-        self['rating_number'] = data.get("rating_number"),
-        self['author'] = data.get("author"),
-        self['post_date'] = datetime.strptime(data.get("post_date"), "%Y-%m-%d").date(),
+        self['product_code'] = data.get("product_code")
+        self['external_id'] = data.get("external_id")
+        self['review_body'] = data.get("review_body")
+        self['rating_number'] = data.get("rating_number")
+        self['author'] = data.get("author")
+        self['post_date'] = datetime.strptime(data.get("post_date"), "%Y-%m-%d").date()
+        return self
