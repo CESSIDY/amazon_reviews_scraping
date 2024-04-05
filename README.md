@@ -35,4 +35,4 @@ This scraper collects and stores reviews for the selected product, to change the
 
 
 ### **After launch**
-You can test the scraper by connecting to `amazon_reviews_scraping-python-1` container (e.g. using Docker Desktop). also connect to Mysql database to view collected data.
+You can see the scraping progress by connecting to the Docker container of the scraper you launched [`amazon_reviews_scraping-scraper-botasaurus-request`, `amazon_reviews_scraping-scraper-scrapy`] (e.g. using Docker Desktop), also connect to Mysql database to view collected data.
