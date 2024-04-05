@@ -1,6 +1,7 @@
 .config.ini
 /.*.ini
 *.session
+.idea
 
 # configuration files
 /.ssl
