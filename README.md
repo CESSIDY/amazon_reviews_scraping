@@ -21,7 +21,7 @@ This scraper collects and stores reviews for the selected product, to change the
    - For Scrapy: 
      - `AUTO_CLOSE_CACHED_CONNECTIONS_ENABLED`=False # If your proxy change it IP only after reconnection than this parameter need to be `True` for closing connection after every request. 
    - For Botasaurus:
-     - `SSL_CERT_CHECK_ENABLED`=True # If you have a problem with the ssl certificate validation when using a proxy, but you trust this proxy then you can disable (`False`) the SSL certificate validation to work around the problem
+     - `SSL_CERT_CHECK_ENABLED`=True # If you have a problem with the ssl certificate validation when using a proxy, then you can disable (`False`) the SSL certificate validation to work around the problem (but it leaves you vulnerable to some security threats)
    - all other settings can remain the same, or you can change them as you wish (for example add your own Mysql database)
 
 ### **Running (After all configurations)**
